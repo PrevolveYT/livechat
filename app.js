@@ -22,25 +22,69 @@ const firebaseConfig = {
   appId: 'YOUR_APP_ID',
 };
 
-// 2) Prompt for the user's display name as soon as they open the page.
-let currentUser = window.prompt('Enter your name to join the chat:') || '';
-currentUser = currentUser.trim();
-if (!currentUser) {
-  currentUser = `Guest-${Math.floor(Math.random() * 10000)}`;
+// 2) Small helpers for collecting required inputs.
+function askRequiredValue(message, defaultValue = '') {
+  let value = '';
+
+  while (!value) {
+    const answer = window.prompt(message, defaultValue) || '';
+    value = answer.trim();
+  }
+
+  return value;
+}
+
+function normalizeRoomCode(rawCode) {
+  return rawCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+}
+
+function createRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+
+  for (let i = 0; i < 6; i += 1) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  return code;
+}
+
+// 3) Ask for name + require chat code workflow (join existing or create new).
+const currentUser = askRequiredValue('Enter your name to join the chat:');
+
+const modeRaw = window.prompt(
+  'Type J to join with a code, or C to create a new chat code:',
+  'J',
+);
+const mode = (modeRaw || 'J').trim().toUpperCase();
+
+let roomCode = '';
+if (mode === 'C') {
+  roomCode = createRoomCode();
+  window.alert(`Your new chat code is: ${roomCode}\nShare this code with others to join.`);
+} else {
+  roomCode = normalizeRoomCode(
+    askRequiredValue('Enter the chat code you want to join:'),
+  );
+}
+
+if (!roomCode) {
+  roomCode = createRoomCode();
+  window.alert(`Invalid code entered. You were placed in new chat code: ${roomCode}`);
 }
 
 const welcomeText = document.getElementById('welcomeText');
 const messagesEl = document.getElementById('messages');
 const formEl = document.getElementById('messageForm');
 const inputEl = document.getElementById('messageInput');
-welcomeText.textContent = `Signed in as ${currentUser}`;
+welcomeText.textContent = `Signed in as ${currentUser} • Room code: ${roomCode}`;
 
-// 3) Initialize Firebase and point to the "messages" collection in Realtime Database.
+// 4) Initialize Firebase and point to room-specific messages in Realtime Database.
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const messagesRef = ref(db, 'messages');
+const messagesRef = ref(db, `rooms/${roomCode}/messages`);
 
-// 4) Helper to render each message in the scrollable message list.
+// 5) Helper to render each message in the scrollable message list.
 function renderMessage(messageData = {}) {
   const item = document.createElement('article');
   item.className = 'message-item';
@@ -69,13 +113,13 @@ function renderMessage(messageData = {}) {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-// 5) Listen for new messages in real time.
+// 6) Listen for new messages in real time for this room only.
 // limitToLast(100) keeps the UI lightweight on free hosting.
 onChildAdded(query(messagesRef, limitToLast(100)), (snapshot) => {
   renderMessage(snapshot.val());
 });
 
-// 6) Send a new message to Realtime Database on form submit.
+// 7) Send a new message to this room on form submit.
 formEl.addEventListener('submit', async (event) => {
   event.preventDefault();
 
@@ -87,6 +131,7 @@ formEl.addEventListener('submit', async (event) => {
   await push(messagesRef, {
     name: currentUser,
     text,
+    roomCode,
     // Using serverTimestamp ensures consistent ordering across users/time zones.
     timestamp: serverTimestamp(),
   });
