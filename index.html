@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Realtime Firebase Chat</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="chat-app">
+      <header class="chat-header">
+        <h1>Realtime Firebase Chat</h1>
+        <p id="welcomeText">Connecting...</p>
+      </header>
+
+      <section id="messages" class="messages" aria-live="polite"></section>
+
+      <form id="messageForm" class="message-form" autocomplete="off">
+        <input
+          id="messageInput"
+          type="text"
+          name="message"
+          placeholder="Write a message..."
+          maxlength="280"
+          required
+        />
+        <button type="submit">Send</button>
+      </form>
+    </main>
+
+    <aside class="setup-notes">
+      <h2>Firebase Setup Instructions</h2>
+      <ol>
+        <li>Create a Firebase project at <code>https://console.firebase.google.com</code>.</li>
+        <li>Add a Web App and copy your Firebase configuration values.</li>
+        <li>
+          In <code>app.js</code>, replace the placeholder values in <code>firebaseConfig</code>
+          with your real keys.
+        </li>
+        <li>
+          In Firebase Console, open Realtime Database and create a database (start in locked
+          mode).
+        </li>
+        <li>
+          Publish these files to GitHub Pages (for example, in the root of your repository or
+          <code>docs/</code> folder).
+        </li>
+      </ol>
+
+      <h3>Suggested Realtime Database Security Rules</h3>
+      <pre><code>{
+  "rules": {
+    "messages": {
+      ".read": true,
+      ".write": true,
+      "$messageId": {
+        ".validate": "newData.hasChildren(['name', 'text', 'timestamp']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 32 && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 280 && newData.child('timestamp').isNumber()"
+      }
+    }
+  }
+}</code></pre>
+      <p>
+        These rules allow public chat access with basic validation. For production apps, add
+        Firebase Authentication and restrict write/read rules.
+      </p>
+    </aside>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
