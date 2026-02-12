@@ -1,6 +1,6 @@
 // Import Firebase SDK modules directly from the official CDN.
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
-import {
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
   getDatabase,
   push,
   ref,
@@ -13,13 +13,13 @@ import {
 // 1) Firebase project configuration.
 // Replace these values with keys from your Firebase project's Web App settings.
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-  databaseURL: 'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT_ID.appspot.com',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyAc2vndvSvkZlt-VcBxFw8Ptj8CMH2gZT0",
+  authDomain: "prvlvechat.firebaseapp.com",
+  projectId: "prvlvechat",
+  storageBucket: "prvlvechat.firebasestorage.app",
+  messagingSenderId: "514369516253",
+  appId: "1:514369516253:web:8f78900c6c2017b4ec2134",
+  measurementId: "G-40RVF0GCK4"
 };
 
 // 2) Small helpers for collecting required inputs.
