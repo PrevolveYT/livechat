@@ -42,6 +42,10 @@
           mode).
         </li>
         <li>
+          On load, users can choose to create a room code or join an existing room code. Messages
+          are separated per room under <code>/rooms/{ROOM_CODE}/messages</code>.
+        </li>
+        <li>
           Publish these files to GitHub Pages (for example, in the root of your repository or
           <code>docs/</code> folder).
         </li>
@@ -50,18 +54,22 @@
       <h3>Suggested Realtime Database Security Rules</h3>
       <pre><code>{
   "rules": {
-    "messages": {
-      ".read": true,
-      ".write": true,
-      "$messageId": {
-        ".validate": "newData.hasChildren(['name', 'text', 'timestamp']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 32 && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 280 && newData.child('timestamp').isNumber()"
+    "rooms": {
+      "$roomCode": {
+        ".read": "$roomCode.matches(/^[A-Z0-9_-]{1,20}$/)",
+        "messages": {
+          ".write": "$roomCode.matches(/^[A-Z0-9_-]{1,20}$/)",
+          "$messageId": {
+            ".validate": "newData.hasChildren(['name', 'text', 'timestamp', 'roomCode']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 32 && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 280 && newData.child('roomCode').val() === $roomCode && newData.child('timestamp').isNumber()"
+          }
+        }
       }
     }
   }
 }</code></pre>
       <p>
-        These rules allow public chat access with basic validation. For production apps, add
-        Firebase Authentication and restrict write/read rules.
+        These rules allow code-based room chats with basic validation. For production, use Firebase
+        Authentication and tighter read/write controls.
       </p>
     </aside>
 
